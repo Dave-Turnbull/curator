@@ -2,8 +2,29 @@ import useApiCall from "../hooks/useApiCall";
 import apiData from "./apiData";
 import { formatElastisearchFilters, formatVandASearchFilters } from "./formatQueries";
 import { Queries } from "./formatQueries";
+import { ArtworkRecord } from "@/types";
 
-export const formatResponseIndex = {
+type Museum = keyof typeof apiData;
+type MuseumArray = Array<Museum>;
+
+interface ApiResponse {
+  data?: any[];
+  records?: any[];
+  [key: string]: any;
+}
+
+interface FormatResponseIndex {
+  data_path: Record<string, string>;
+  fields: {
+    [key: string]: {
+      value: Record<string, string | string[] | null>;
+      display_title?: string;
+      help_text?: string;
+    };
+  };
+}
+
+export const formatResponseIndex: FormatResponseIndex = {
     data_path: {
         [apiData.CHIA.internalID]: 'data',
         [apiData.VANDA.internalID]: 'records',
@@ -113,78 +134,80 @@ export const formatResponseIndex = {
         },
     }
   };
-  
 
-type Museum = keyof typeof apiData;
-type MuseumArray = Array<Museum>
-
-export const sendApiRequest = async (apiURL: string, apiURLEndpoint: string, queries: Record<string, any>) => {
+  export const sendApiRequest = async (apiURL: string, apiURLEndpoint: string, queries: Record<string, any>): Promise<ApiResponse> => {
     try {
-        // Make the API call
-        console.log('Endpoint: ', apiURL, apiURLEndpoint)
-        const response = await useApiCall.get(apiURL, apiURLEndpoint, queries);
-        return response.data;
+      const response = await useApiCall.get(apiURL, apiURLEndpoint, queries);
+      return response.data as ApiResponse;
     } catch (error) {
-        console.error("Error fetching data:", error);
-        throw error;
+      console.error("Error fetching data:", error);
+      throw error;
     }
-};
-
-const getFormattedResponse = async (museum_id: string, queries: Record<string, any>) => {
-    const response = await sendApiRequest(apiData[museum_id].url, apiData[museum_id].endpoints.search.endpoint, {...queries, ...apiData[museum_id].endpoints.search.required_queries});
-    console.log('raw response: ', response)
-    const formattedResponse: Array<object> = [];
-    const responseArtworkData = response[formatResponseIndex.data_path[museum_id]];
-
-    const resolveNestedField = (obj: any, pathArray: string[] | string): any => {
-        if (Array.isArray(pathArray)) {
-            const result = pathArray.reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : null), obj);
-            return result
+  };
+  
+  const getFormattedResponse = async (museum_id: Museum, queries: Record<string, any>): Promise<ArtworkRecord[]> => {
+    const response = await sendApiRequest(
+      apiData[museum_id].url,
+      apiData[museum_id].endpoints.search.endpoint,
+      { ...queries, ...apiData[museum_id].endpoints.search.required_queries }
+    );
+    
+    const formattedResponse: ArtworkRecord[] = [];
+    const responseArtworkData = response[formatResponseIndex.data_path[museum_id]] || [];
+  
+    const resolveNestedField = (obj: any, pathArray: string[] | string | null): any => {
+        if (!pathArray) {
+            return null
         }
-        return obj[pathArray];
-    };
-
-    responseArtworkData.forEach((responseItem) => {
-        const formattedResponseItem: Record<string, any> = {};
-        Object.keys(formatResponseIndex.fields).forEach((key) => {
-            const responseItemPath = formatResponseIndex.fields[key].value[museum_id];
-            const responseItemField = resolveNestedField(responseItem, responseItemPath);
-
-            if (key === 'image_id') {
-                formattedResponseItem.thumbnail_src = apiData[museum_id].get_image_url(200, responseItemField)
-                formattedResponseItem.image_src = apiData[museum_id].get_image_url(843, responseItemField)
-            } else if (responseItemField) {
-                formattedResponseItem[key] = responseItemField;
-            }
-        });
-
-        formattedResponse.push(formattedResponseItem);
-    });
-
-    return formattedResponse;
-};
-
-const fetchData = async(queries: Queries, museumsToSearch?: MuseumArray, ) => {
-    const results = []
-    if (museumsToSearch) {
-        for (const museumToSearch of museumsToSearch) {
-          switch (museumToSearch) {
-            case 'VANDA':
-              const formattedVANDAQueries = formatVandASearchFilters(queries)
-              results.push(...await getFormattedResponse('VANDA', formattedVANDAQueries));
-              break;
-            case 'CHIA':
-                const formattedCHIAQueries = formatElastisearchFilters(queries)
-                console.log(formattedCHIAQueries)
-              results.push(...await getFormattedResponse('CHIA', formattedCHIAQueries));
-              break;
-          }
-        }
-      } else {
-        results.push(...await getFormattedResponse('VANDA', queries));
-        results.push(...await getFormattedResponse('CHIA', queries));
+      if (Array.isArray(pathArray)) {
+        return pathArray.reduce((acc, key) => (acc && acc[key] !== undefined ? acc[key] : null), obj);
       }
-    return results
-}
-
-export default fetchData
+      return obj[pathArray];
+    };
+  
+    responseArtworkData.forEach((responseItem: any) => {
+      const formattedResponseItem: ArtworkRecord = { id: '', title: '' };
+      
+      Object.keys(formatResponseIndex.fields).forEach((key) => {
+        const responseItemPath = formatResponseIndex.fields[key].value[museum_id];
+        const responseItemField = resolveNestedField(responseItem, responseItemPath);
+  
+        if (key === 'image_id') {
+          formattedResponseItem.thumbnail_src = apiData[museum_id].get_image_url(200, responseItemField);
+          formattedResponseItem.image_src = apiData[museum_id].get_image_url(843, responseItemField);
+        } else if (responseItemField) {
+          formattedResponseItem[key] = responseItemField;
+        }
+      });
+  
+      formattedResponse.push(formattedResponseItem);
+    });
+  
+    return formattedResponse;
+  };
+  
+  const fetchData = async (queries: Queries, museumsToSearch?: MuseumArray): Promise<ArtworkRecord[]> => {
+    const results: ArtworkRecord[] = [];
+    
+    if (museumsToSearch) {
+      for (const museumToSearch of museumsToSearch) {
+        switch (museumToSearch) {
+          case 'VANDA':
+            const formattedVANDAQueries = formatVandASearchFilters(queries);
+            results.push(...await getFormattedResponse('VANDA', formattedVANDAQueries));
+            break;
+          case 'CHIA':
+            const formattedCHIAQueries = formatElastisearchFilters(queries);
+            results.push(...await getFormattedResponse('CHIA', formattedCHIAQueries));
+            break;
+        }
+      }
+    } else {
+      results.push(...await getFormattedResponse('VANDA', queries));
+      results.push(...await getFormattedResponse('CHIA', queries));
+    }
+    
+    return results;
+  };
+  
+  export default fetchData;
