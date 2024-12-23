@@ -7,6 +7,15 @@ export interface Queries {
     };
     creator?: string | null;
   }
+
+  interface ElasticsearchQueryStruct {
+    query: {
+      bool: {
+        filter: any[];
+      };
+    };
+    q?: string;  // Optional top-level 'q' field
+  }
   
   export const formatVandASearchFilters = (queries: Queries): Record<string, any> => {
     const formattedQueries: Record<string, any> = {};
@@ -35,7 +44,7 @@ export interface Queries {
   };
   
   export const formatElastisearchFilters = (queries: Queries): Record<string, any> => {
-    const formattedQueries = {
+    const formattedQueries:ElasticsearchQueryStruct = {
       query: {
         bool: {
           filter: [] as any[]

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import './App.css';
 import fetchData, { formatResponseIndex } from './utils/fetchData';
 import { Button, Card, Image, Flex, Input } from "@chakra-ui/react";
@@ -6,7 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DataListItem, DataListRoot } from "@/components/ui/data-list";
 import { Switch } from "@/components/ui/switch";
 import apiData from './utils/apiData';
-import { ArtworkRecord, DateRange } from './types';
+import { ArtworkRecord, MuseumKey } from './types';
 
 function App() {
   const [data, setData] = useState<ArtworkRecord[] | null>(null);
@@ -15,8 +15,8 @@ function App() {
   const [mainSearchInput, setMainSearchInput] = useState<string>('');
   const [titleSearchInput, setTitleSearchInput] = useState<string>('');
   const [creatorInput, setCreatorInput] = useState<string>('');
-  const [dateRangeInput, setDateRangeInput] = useState<DateRange>({from: null, to: null});
-  const [museumsToSearch, setMuseumsToSearch] = useState<string[]>(Object.keys(apiData));
+  const [dateRangeInput, setDateRangeInput] = useState<{from: number | null; to: number | null}>({from: null, to: null});
+  const [museumsToSearch, setMuseumsToSearch] = useState<MuseumKey[]>(Object.keys(apiData) as MuseumKey[]);
   const [isTitleSearch, setIsTitleSearch] = useState<boolean>(false);
   const [isAdvancedSearch, setIsAdvancedSearch] = useState<boolean>(false);
 
@@ -38,7 +38,7 @@ function App() {
     }
   };
 
-  const handleMuseumCheckboxChange = (key: string) => {
+  const handleMuseumCheckboxChange = (key: any) => {
     setMuseumsToSearch((prev) =>
       prev.includes(key)
         ? prev.filter((museum) => museum !== key)
@@ -57,7 +57,7 @@ function App() {
     <>
       <Input onChange={(e) => setMainSearchInput(e.target.value)} value={mainSearchInput} placeholder="Search for Artwork" />
       {!isAdvancedSearch && 
-        <Switch checked={isTitleSearch} onCheckedChange={(checked: boolean) => setIsTitleSearch(checked)}>
+        <Switch checked={isTitleSearch} onCheckedChange={(checked: any) => setIsTitleSearch(checked)}>
           Search Title Only
         </Switch>
       }
@@ -68,7 +68,7 @@ function App() {
         </>
       )}
       <div>
-        {Object.keys(apiData).map((key) => (
+        {(Object.keys(apiData) as MuseumKey[]).map((key) => (
           <Checkbox
             key={key}
             checked={museumsToSearch.includes(key)}
@@ -79,7 +79,7 @@ function App() {
           </Checkbox>
         ))}
       </div>
-      <Switch checked={isAdvancedSearch} onCheckedChange={(checked: boolean) => setIsAdvancedSearch(checked)}>
+      <Switch checked={isAdvancedSearch} onCheckedChange={(checked: any) => setIsAdvancedSearch(checked)}>
         Advanced Search
       </Switch>
       <Button onClick={getData} variant="solid">Search</Button>

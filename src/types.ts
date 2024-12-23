@@ -1,4 +1,28 @@
-export interface ArtworkRecord {
+export interface ApiEndpoint {
+    endpoint: string;
+    required_queries: Record<string, any>;
+  }
+  
+  export interface ApiEndpoints {
+    search: ApiEndpoint;
+    object?: ApiEndpoint;
+  }
+  
+  export interface Museum {
+    name: string;
+    internalID: string;
+    url: string;
+    endpoints: ApiEndpoints;
+    required_queries: Record<string, any>;
+    get_image_url: (size: number, id: string) => string;
+  }
+  
+  export interface ApiDataType {
+    VANDA: Museum;
+    CHIA: Museum;
+  }
+  
+  export interface ArtworkRecord {
     id: string;
     title: string;
     description?: string;
@@ -12,25 +36,7 @@ export interface ArtworkRecord {
     size?: string;
     type?: string;
     museum?: string;
-    [key: string]: any; // Allow for additional dynamic fields
+    [key: string]: any;
   }
   
-  export interface ApiDataConfig {
-    [key: string]: {
-      name: string;
-      internalID: string;
-      url: string;
-      endpoints: {
-        search: {
-          endpoint: string;
-          required_queries: Record<string, any>;
-        };
-      };
-      get_image_url: (size: number, id: string) => string;
-    };
-  }
-  
-export interface DateRange {
-    from: number | null;
-    to: number | null;
-  }
+  export type MuseumKey = keyof ApiDataType;
