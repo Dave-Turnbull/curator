@@ -7,6 +7,7 @@ import { DataListItem, DataListRoot } from "@/components/ui/data-list";
 import { Switch } from "@/components/ui/switch";
 import apiData from './utils/apiData';
 import { ArtworkRecord, MuseumKey } from './types';
+import { Queries } from './utils/formatQueries';
 
 function App() {
   const [data, setData] = useState<ArtworkRecord[] | null>(null);
@@ -15,10 +16,14 @@ function App() {
   const [mainSearchInput, setMainSearchInput] = useState<string>('');
   const [titleSearchInput, setTitleSearchInput] = useState<string>('');
   const [creatorInput, setCreatorInput] = useState<string>('');
-  const [dateRangeInput, setDateRangeInput] = useState<{from: number | null; to: number | null}>({from: null, to: null});
+  const [dateRangeFrom, setDateRangeFrom] = useState('');
+  const [dateRangeTo, setDateRangeTo] = useState('');
   const [museumsToSearch, setMuseumsToSearch] = useState<MuseumKey[]>(Object.keys(apiData) as MuseumKey[]);
   const [isTitleSearch, setIsTitleSearch] = useState<boolean>(false);
   const [isAdvancedSearch, setIsAdvancedSearch] = useState<boolean>(false);
+  const [currentPageNumber, setCurrentPageNumber] = useState(0)
+  const [currentSearchQueries, setCurrentSearchQueries] = useState<Queries>({})
+  const [currentMuseumsSearched, setCurrentMuseumsSearched] = useState<MuseumKey[]>(Object.keys(apiData) as MuseumKey[]);
 
   const getData = async () => {
     try {
@@ -26,10 +31,12 @@ function App() {
       const queries = {
         search_titles: titleSearchInput,
         search_all: mainSearchInput,
-        date: dateRangeInput,
+        date: {from: Number(dateRangeFrom), to: Number(dateRangeTo)},
         creator: creatorInput,
       };
       const result = await fetchData(queries, museumsToSearch);
+      setCurrentSearchQueries(queries)
+      setCurrentMuseumsSearched(museumsToSearch)
       setData(result);
     } catch (err) {
       setError(`Failed to fetch data: ${err instanceof Error ? err.message : String(err)}`);
@@ -46,11 +53,29 @@ function App() {
     );
   };
   const handleDateRangeChange = (e: any, fromOrTo: string) => {
-    setDateRangeInput((prev) => {
-      // @ts-ignore
-      prev[fromOrTo] = e.target.value
-      return prev
-    })
+    if (fromOrTo === 'from') {
+      setDateRangeFrom(e.target.value)
+      }
+    if (fromOrTo === 'to') {
+      setDateRangeTo(e.target.value)
+    }
+  }
+  const handleLoadNextPage = async () => {
+    console.log(currentSearchQueries)
+    if(Array.isArray(data)) {
+      try {
+        setLoading(true);
+        const result = await fetchData({...currentSearchQueries, page: currentPageNumber + 1}, currentMuseumsSearched);
+        setData((prev) => [...prev, ...result]);
+      } catch (err) {
+        setError(`Failed to fetch data: ${err instanceof Error ? err.message : String(err)}`);
+      } finally {
+        setCurrentPageNumber((prev) => prev++)
+        setLoading(false);
+      }
+    } else {
+      setError('Failed to load more data')
+    }
   }
 
   const saveItem = (id: string) => {
@@ -64,7 +89,7 @@ function App() {
     <>
       <Input onChange={(e) => setMainSearchInput(e.target.value)} value={mainSearchInput} placeholder="Search for Artwork" />
       {!isAdvancedSearch && 
-        <Switch checked={isTitleSearch} onCheckedChange={(checked: any) => setIsTitleSearch(checked)}>
+        <Switch checked={isTitleSearch} onCheckedChange={(e) => setIsTitleSearch(e.checked)}>
           Search Title Only
         </Switch>
       }
@@ -72,8 +97,8 @@ function App() {
         <>
           <Input onChange={(e) => setTitleSearchInput(e.target.value)} value={titleSearchInput} placeholder="Search Titles" />
           <Input onChange={(e) => setCreatorInput(e.target.value)} value={creatorInput} placeholder="Search Artist/Maker" />
-          <Input onChange={(e) => handleDateRangeChange(e, 'from')} value={dateRangeInput.from?dateRangeInput.from:""} placeholder="Date Range From" />
-          <Input onChange={(e) => handleDateRangeChange(e, 'to')} value={dateRangeInput.from?dateRangeInput.from:""} placeholder="Date Range to" />
+          <Input onChange={(e) => handleDateRangeChange(e, 'from')} value={dateRangeFrom} placeholder="Date Range From" />
+          <Input onChange={(e) => handleDateRangeChange(e, 'to')} value={dateRangeTo} placeholder="Date Range to" />
         </>
       )}
       <div>
@@ -88,7 +113,7 @@ function App() {
           </Checkbox>
         ))}
       </div>
-      <Switch checked={isAdvancedSearch} onCheckedChange={(checked: any) => setIsAdvancedSearch(checked)}>
+      <Switch checked={isAdvancedSearch} onCheckedChange={(e) => setIsAdvancedSearch(e.checked)}>
         Advanced Search
       </Switch>
       <Button onClick={getData} variant="solid">Search</Button>
@@ -96,6 +121,7 @@ function App() {
       {error && <p>{`Error: ${error}`}</p>}
       
       {data ? (
+        <div>
         <Flex gap="4" wrap="wrap"> 
           {data.map((record: ArtworkRecord) => (
             <Card.Root maxW="sm" overflow="hidden" key={record.id}>
@@ -132,9 +158,11 @@ function App() {
             </Card.Root>
           ))}
         </Flex>
-      ) : (
-        <p>Press Submit to find artworks</p>
-      )}
+        <Button variant="solid" onClick={handleLoadNextPage}>Next Page</Button>
+        </div>
+      ) : 
+        !loading ? <p>Press Submit to find artworks</p>:<></>
+      }
     </>
   );
 }

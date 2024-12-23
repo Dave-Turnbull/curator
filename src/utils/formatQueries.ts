@@ -6,6 +6,7 @@ export interface Queries {
       to?: number | null;
     };
     creator?: string | null;
+    page?: number;
   }
 
   interface ElasticsearchQueryStruct {
@@ -15,6 +16,7 @@ export interface Queries {
       };
     };
     q?: string;  // Optional top-level 'q' field
+    from?: number;
   }
   
   export const formatVandASearchFilters = (queries: Queries): Record<string, any> => {
@@ -36,6 +38,8 @@ export interface Queries {
           case 'creator':
             formattedQueries.q_actor = value;
             break;
+          case 'page':
+            formattedQueries.page = value + 1
         }
       }
     });
@@ -68,8 +72,8 @@ export interface Queries {
               formattedQueries.query.bool.filter.push({
                 range: {
                   date_display: {
-                    gte: value.from ? `*${value.from}*` : undefined,
-                    lte: value.to ? `*${value.to}*` : undefined
+                    gte: value.from ? value.from : undefined,
+                    lte: value.to ? value.to : undefined
                   }
                 }
               });
@@ -80,6 +84,8 @@ export interface Queries {
               wildcard: { artist_display: { value: `*${value}*` } }
             });
             break;
+          case 'page':
+            formattedQueries.from = value
         }
       }
     });
