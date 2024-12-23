@@ -45,6 +45,13 @@ function App() {
         : [...prev, key]
     );
   };
+  const handleDateRangeChange = (e: any, fromOrTo: string) => {
+    setDateRangeInput((prev) => {
+      // @ts-ignore
+      prev[fromOrTo] = e.target.value
+      return prev
+    })
+  }
 
   const saveItem = (id: string) => {
     // Implementation here
@@ -65,6 +72,8 @@ function App() {
         <>
           <Input onChange={(e) => setTitleSearchInput(e.target.value)} value={titleSearchInput} placeholder="Search Titles" />
           <Input onChange={(e) => setCreatorInput(e.target.value)} value={creatorInput} placeholder="Search Artist/Maker" />
+          <Input onChange={(e) => handleDateRangeChange(e, 'from')} value={dateRangeInput.from?dateRangeInput.from:""} placeholder="Date Range From" />
+          <Input onChange={(e) => handleDateRangeChange(e, 'to')} value={dateRangeInput.from?dateRangeInput.from:""} placeholder="Date Range to" />
         </>
       )}
       <div>
