@@ -1,88 +1,79 @@
 export interface Queries {
-    search_titles?: string|null;
-    search_all?: string|null;
+    search_titles?: string | null;
+    search_all?: string | null;
     date?: {
-      from?: number|null;
-      to?: number|null;
+      from?: number | null;
+      to?: number | null;
     };
-    creator?: string|null;
+    creator?: string | null;
   }
-
-
-
-// const searchQueryIndex = {
-//     search_titles: {
-//         [apiData.CHIA.internalID]: 'q',
-//         [apiData.VANDA.internalID]: 'search',
-//     },
-//     search_all: {
-//         [apiData.CHIA.internalID]: '',
-//         [apiData.VANDA.internalID]: 'q',
-//     },
-//     date: {
-//         [apiData.CHIA.internalID]: '',
-//         [apiData.VANDA.internalID]: '',
-//     },
-//     creator: {
-//         [apiData.CHIA.internalID]: '',
-//         [apiData.VANDA.internalID]: '',
-//     },
-//     type: {
-//         [apiData.CHIA.internalID]: '',
-//         [apiData.VANDA.internalID]: '',
-//     },
-//     origin: {
-//         [apiData.CHIA.internalID]: '',
-//         [apiData.VANDA.internalID]: '',
-//     }
-// }
-export const formatVandASearchFilters = (queries: Queries) => {
-    const formattedQueries = {}
-    Object.keys(queries).forEach(key => {
-        if (queries[key]){
+  
+  export const formatVandASearchFilters = (queries: Queries): Record<string, any> => {
+    const formattedQueries: Record<string, any> = {};
+    
+    Object.entries(queries).forEach(([key, value]) => {
+      if (value) {
         switch (key) {
-            case 'search_titles':
-                formattedQueries.q = queries[key]
-                break;
-            case 'search_all':
-                formattedQueries.search = queries[key]
-                break;
-            case 'date':
-                if (queries[key].from) formattedQueries.year_made_from = queries[key].from
-                if (queries[key].to) formattedQueries.year_made_to = queries[key].to
-                break;
-            case 'creator':
-                formattedQueries.q_actor = queries[key]
-                break;
-          }
+          case 'search_titles':
+            formattedQueries.q = value;
+            break;
+          case 'search_all':
+            formattedQueries.search = value;
+            break;
+          case 'date':
+            if (value.from) formattedQueries.year_made_from = value.from;
+            if (value.to) formattedQueries.year_made_to = value.to;
+            break;
+          case 'creator':
+            formattedQueries.q_actor = value;
+            break;
         }
-    })
-    return formattedQueries
-}
-
-export const formatElastisearchFilters = (queries: object) => {
-    const formattedQueries = {query: {bool: {filter: []}}}
-    const filterArray: Array<any> = formattedQueries.query.bool.filter
-    Object.keys(queries).forEach(key => {
-        if (queries[key]){
+      }
+    });
+    
+    return formattedQueries;
+  };
+  
+  export const formatElastisearchFilters = (queries: Queries): Record<string, any> => {
+    const formattedQueries = {
+      query: {
+        bool: {
+          filter: [] as any[]
+        }
+      }
+    };
+    
+    Object.entries(queries).forEach(([key, value]) => {
+      if (value) {
         switch (key) {
-            case 'search_titles':
-                filterArray.push({wildcard: {title: {value: `*${queries[key]}*`}}})
-                break;
-            case 'search_all':
-                formattedQueries.q = queries[key]
-                break;
-            case 'date':
-                if (queries.date.to || queries.date.from){
-                filterArray.push({range: {date_display: {gte: `*${queries[key].from}*`, lte: `*${queries[key].to}*`}}})
+          case 'search_titles':
+            formattedQueries.query.bool.filter.push({
+              wildcard: { title: { value: `*${value}*` } }
+            });
+            break;
+          case 'search_all':
+            formattedQueries.q = value;
+            break;
+          case 'date':
+            if (value.to || value.from) {
+              formattedQueries.query.bool.filter.push({
+                range: {
+                  date_display: {
+                    gte: value.from ? `*${value.from}*` : undefined,
+                    lte: value.to ? `*${value.to}*` : undefined
+                  }
                 }
-                break;
-            case 'creator':
-                filterArray.push({wildcard: {artist_display: {value: `*${queries[key]}*`}}})
-                break;
-          }
+              });
+            }
+            break;
+          case 'creator':
+            formattedQueries.query.bool.filter.push({
+              wildcard: { artist_display: { value: `*${value}*` } }
+            });
+            break;
         }
-    })
-    return formattedQueries
-}
-
+      }
+    });
+    
+    return formattedQueries;
+  };
