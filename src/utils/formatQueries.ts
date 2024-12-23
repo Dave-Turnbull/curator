@@ -15,7 +15,7 @@ export interface Queries {
         filter: any[];
       };
     };
-    q?: string;  // Optional top-level 'q' field
+    q?: string; 
     from?: number;
   }
   

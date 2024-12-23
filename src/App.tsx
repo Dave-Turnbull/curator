@@ -1,16 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
-import fetchData, { formatResponseIndex } from './utils/fetchData';
-import { Button, Card, Image, Flex, Input } from "@chakra-ui/react";
+import fetchData from './utils/fetchData';
+import { Button, Input } from "@chakra-ui/react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DataListItem, DataListRoot } from "@/components/ui/data-list";
 import { Switch } from "@/components/ui/switch";
 import apiData from './utils/apiData';
 import { ArtworkRecord, MuseumKey } from './types';
 import { Queries } from './utils/formatQueries';
+import { getFromLocalStorage, saveArtwork, deleteArtwork } from './utils/localStorage';
+import ArtworkGrid from './components/artworkGrid';
 
 function App() {
-  const [data, setData] = useState<ArtworkRecord[] | null>(null);
+  const [data, setData] = useState<ArtworkRecord[]>([]);
+  const [savedCollection, setSavedCollection] = useState<ArtworkRecord[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [mainSearchInput, setMainSearchInput] = useState<string>('');
@@ -24,6 +26,12 @@ function App() {
   const [currentPageNumber, setCurrentPageNumber] = useState(0)
   const [currentSearchQueries, setCurrentSearchQueries] = useState<Queries>({})
   const [currentMuseumsSearched, setCurrentMuseumsSearched] = useState<MuseumKey[]>(Object.keys(apiData) as MuseumKey[]);
+
+  useEffect(() => {
+    const savedArtworks = getFromLocalStorage("savedArtworks")
+    //@ts-ignore
+    setSavedCollection(savedArtworks);
+  }, []);
 
   const getData = async () => {
     try {
@@ -78,12 +86,17 @@ function App() {
     }
   }
 
-  const saveItem = (id: string) => {
-    // Implementation here
-    return () => {
-      console.log('Saving item:', id);
-    };
+  const saveItem = (artworkObject: object) => {
+    saveArtwork(artworkObject)
   };
+
+  const deleteItem = (index: number) => {
+    setSavedCollection((prevArray) => {
+      prevArray.splice(index, 1);
+      return prevArray
+    })
+    deleteArtwork(index)
+  }
 
   return (
     <>
@@ -120,48 +133,18 @@ function App() {
       {loading && <p>Loading...</p>}
       {error && <p>{`Error: ${error}`}</p>}
       
-      {data ? (
-        <div>
-        <Flex gap="4" wrap="wrap"> 
-          {data.map((record: ArtworkRecord) => (
-            <Card.Root maxW="sm" overflow="hidden" key={record.id}>
-              <Image
-                src={record.image_src}
-                alt={record.title || "Artwork"}
-              />
-              <Card.Body gap="2">
-                <Card.Title>{record.title}</Card.Title>
-                <Card.Description>
-                  {record.description}
-                </Card.Description>
-                <DataListRoot orientation="horizontal" divideY="1px" maxW="md">
-                  {Object.keys(record).map(key => {
-                    const field = formatResponseIndex.fields[key];
-                    if (field?.display_title) {
-                      return (
-                        <DataListItem
-                          info={field.help_text || null}
-                          key={key}
-                          label={field.display_title}
-                          value={record[key]}
-                        />
-                      );
-                    }
-                    return null;
-                  })}
-                </DataListRoot>
-              </Card.Body>
-              <Card.Footer gap="2">
-                <Button variant="solid" onClick={saveItem(record.id)}>Save to Collection</Button>
-                <Button variant="ghost">Request Additional Info</Button>
-              </Card.Footer>
-            </Card.Root>
-          ))}
-        </Flex>
-        <Button variant="solid" onClick={handleLoadNextPage}>Next Page</Button>
-        </div>
+      {data.length > 0 ? (
+        <>
+          <ArtworkGrid data={data} saveItem={saveItem} deleteItem={deleteItem} isLocalStorage={false}/>
+          <Button variant="solid" onClick={handleLoadNextPage}>Next Page</Button>
+        </>
       ) : 
-        !loading ? <p>Press Submit to find artworks</p>:<></>
+        !loading ? (
+        <>
+        <h1>Your Collection:</h1>
+        <ArtworkGrid data={savedCollection} saveItem={saveItem} deleteItem={deleteItem} isLocalStorage={true}/>
+        </>
+      ):<></>
       }
     </>
   );
