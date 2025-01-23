@@ -14,7 +14,9 @@ const apiData = {
             },
             object: {
                 endpoint: "/object",
-                required_queries: {},
+                required_queries: {
+                    // limit: 20
+                },
             }
         },
         required_queries: {},
@@ -29,6 +31,7 @@ const apiData = {
                 endpoint: "/artworks/search",
                 required_queries: {
                     fields: "id,title,image_id,thumbnail,api_link,artist_display,date_display,place_of_origin,medium_display,credit_line,dimensions,description,short_description,is_public_domain",
+                    limit: 15,
                 }
             },
         },

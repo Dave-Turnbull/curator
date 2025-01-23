@@ -4,30 +4,29 @@ const saveToLocalStorage = (key: string, data: object[]) => {
 
 export const getFromLocalStorage = (key: string): object[] => {
     const storedData = localStorage.getItem(key);
-    return storedData ? JSON.parse(storedData) : [];
+    return storedData ? JSON.parse(storedData) : {};
 };
 
-const addToLocalStorageArray = (key: string, newObject: object) => {
-    const currentArray = getFromLocalStorage(key) || [];
-    currentArray.push(newObject);
-    saveToLocalStorage(key, currentArray);
-};
-
-const deleteFromLocalStorageByIndex = (key: string, index: number) => {
-    const currentArray = getFromLocalStorage(key);
+export const addToLocalStorageByID = (key: string, newArtwork: object) => {
+  console.log('saving', newArtwork)
+  const currentData = getFromLocalStorage(key) || {};
+  console.log('datafromstorage', currentData)
+  currentData[newArtwork.internal_id] = (newArtwork);
+  console.log('currentData', currentData)
+  saveToLocalStorage(key, currentData);
   
-    if (index >= 0 && index < currentArray.length) {
-      currentArray.splice(index, 1);
-      saveToLocalStorage(key, currentArray);
-    } else {
-      console.warn("Invalid index provided.");
-    }
-  };
+}
+
+export const deleteFromLocalStorageByID = (key: string, internal_id: string) => {
+  const currentData = getFromLocalStorage(key);
+  delete currentData[internal_id]
+  saveToLocalStorage(key, currentData);
+}
 
 export const saveArtwork = (artwork: object) => {
-    addToLocalStorageArray('savedArtworks', artwork);
+  addToLocalStorageByID('savedArtworks', artwork, )
 };
 
-export const deleteArtwork = (index: number) => {
-    deleteFromLocalStorageByIndex('savedArtworks', index);
+export const deleteArtwork = (internal_id: number) => {
+    deleteFromLocalStorageByID('savedArtworks', internal_id);
 };
