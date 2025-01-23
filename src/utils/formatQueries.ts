@@ -43,7 +43,7 @@ export interface Queries {
         }
       }
     });
-    
+    console.log(formattedQueries)
     return formattedQueries;
   };
   

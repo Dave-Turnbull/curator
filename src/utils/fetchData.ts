@@ -144,6 +144,17 @@ export const formatResponseIndex: FormatResponseIndex = {
       throw error;
     }
   };
+
+  const removeHTMLTags = (text: string): string => {
+    if (text) {
+      return text
+        .replace(/<\/?p>/g, '\n')
+        .replace(/<br\s*\/?>/g, '\n')
+        .replace(/<[^>]+>/g, '')
+        .trim();
+    }
+    return ''
+  };
   
   const getFormattedResponse = async (museum_id: Museum, queries: Record<string, any>): Promise<ArtworkRecord[]> => {
     const response = await sendApiRequest(
@@ -171,10 +182,13 @@ export const formatResponseIndex: FormatResponseIndex = {
       Object.keys(formatResponseIndex.fields).forEach((key) => {
         const responseItemPath = formatResponseIndex.fields[key].value[museum_id];
         const responseItemField = resolveNestedField(responseItem, responseItemPath);
-  
         if (key === 'image_id') {
           formattedResponseItem.thumbnail_src = apiData[museum_id].get_image_url(200, responseItemField);
           formattedResponseItem.image_src = apiData[museum_id].get_image_url(843, responseItemField);
+        } else if (key === 'id') {
+          formattedResponseItem.internal_id = `${museum_id}-${responseItem[formatResponseIndex.fields.id.value[museum_id]]}`
+        } else if (key === 'description' || key === 'short_description') {
+          formattedResponseItem[key] = removeHTMLTags(responseItemField)
         } else if (responseItemField) {
           formattedResponseItem[key] = responseItemField;
         }
@@ -188,7 +202,7 @@ export const formatResponseIndex: FormatResponseIndex = {
   
   const fetchData = async (queries: Queries, museumsToSearch?: MuseumArray): Promise<ArtworkRecord[]> => {
     const results: ArtworkRecord[] = [];
-    
+    console.log('current queries: ', queries, museumsToSearch)
     if (museumsToSearch) {
       for (const museumToSearch of museumsToSearch) {
         switch (museumToSearch) {

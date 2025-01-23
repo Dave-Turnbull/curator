@@ -40,3 +40,12 @@
 .read-the-docs {
   color: #888;
 }
+
+.hyperlink {
+  color: #a9e7ff;
+}
+
+.hyperlink:hover {
+  color: #69d4ff;
+  text-decoration: underline;
+}
