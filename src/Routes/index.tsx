@@ -8,7 +8,7 @@ export const Routing = () => {
   return (
     <Routes>
       <Route path="/" element={<Homepage />} />
-      <Route path="/search*" element={<SearchResults />} />
+      <Route path="/search" element={<SearchResults />} />
       <Route path="/saved" element={<Saved />} />
       <Route path="/404" element={<NotFound />} />
       <Route path="*" element={<Navigate to="/404" replace />} />

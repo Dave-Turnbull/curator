@@ -220,7 +220,7 @@ export const formatResponseIndex: FormatResponseIndex = {
       results.push(...await getFormattedResponse('VANDA', queries));
       results.push(...await getFormattedResponse('CHIA', queries));
     }
-    
+    console.log(results)
     return results;
   };
   
