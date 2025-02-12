@@ -1,3 +1,6 @@
+import vandaLogo from '@/assets/vanda_logo.jpg'
+import chiaLogo from '@/assets/chia_Logo.jpg'
+
 const getIIIFUrl = (url: string, imageId: string, size: number) => {
     return `${url}/${imageId}/full/${size},/0/default.jpg`
 }
@@ -20,6 +23,7 @@ const apiData = {
             }
         },
         required_queries: {},
+        image_placeholder: vandaLogo,
         get_image_url: (size: number, id: string) => getIIIFUrl('https://framemark.vam.ac.uk/collections/', id, size),
     },
     CHIA: {
@@ -35,6 +39,7 @@ const apiData = {
                 }
             },
         },
+        image_placeholder: chiaLogo,
         get_image_url: (size: number, id: string) => getIIIFUrl('https://www.artic.edu/iiif/2/', id, size),
     }
 }

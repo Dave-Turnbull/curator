@@ -132,7 +132,37 @@ export const formatResponseIndex: FormatResponseIndex = {
                 [apiData.VANDA.internalID]: ['systemNumber'],
             }
         },
+        sort_by: {
+            value: {
+                [apiData.CHIA.internalID]: ['sort'],
+                [apiData.VANDA.internalID]: ['order_by'],
+            }
+          },
+        order: {
+            value: {
+                [apiData.CHIA.internalID]: ['order'],
+                [apiData.VANDA.internalID]: ['order_sort'],
+            }
+        },
     }
+  };
+
+  export const orderByIndex = {
+    relevance: {
+      [apiData.VANDA.internalID]: "",
+      [apiData.CHIA.internalID]: "_score",
+    },
+    // title: {
+    //   [apiData.CHIA.internalID]: "title.keyword",
+    // },
+    artist: {
+      [apiData.VANDA.internalID]: "artist",
+      [apiData.CHIA.internalID]: "artist_id",
+    },
+    date: {
+      [apiData.VANDA.internalID]: "date",
+      [apiData.CHIA.internalID]: "date_start",
+    },
   };
 
   export const sendApiRequest = async (apiURL: string, apiURLEndpoint: string, queries: Record<string, any>): Promise<ApiResponse> => {
@@ -162,6 +192,7 @@ export const formatResponseIndex: FormatResponseIndex = {
       apiData[museum_id].endpoints.search.endpoint,
       { ...queries, ...apiData[museum_id].endpoints.search.required_queries }
     );
+    console.log(response)
     
     const formattedResponse: ArtworkRecord[] = [];
     const responseArtworkData = response[formatResponseIndex.data_path[museum_id]] || [];
@@ -182,9 +213,10 @@ export const formatResponseIndex: FormatResponseIndex = {
       Object.keys(formatResponseIndex.fields).forEach((key) => {
         const responseItemPath = formatResponseIndex.fields[key].value[museum_id];
         const responseItemField = resolveNestedField(responseItem, responseItemPath);
-        if (key === 'image_id') {
-          formattedResponseItem.thumbnail_src = apiData[museum_id].get_image_url(200, responseItemField);
-          formattedResponseItem.image_src = apiData[museum_id].get_image_url(843, responseItemField);
+        if (key === 'image_id' || key === '_primaryImageId') {
+          const placeholderPath = apiData[museum_id].image_placeholder
+          formattedResponseItem.thumbnail_src = responseItemField?apiData[museum_id].get_image_url(200, responseItemField):placeholderPath;
+          formattedResponseItem.image_src = responseItemField?apiData[museum_id].get_image_url(843, responseItemField):placeholderPath;
         } else if (key === 'id') {
           formattedResponseItem.internal_id = `${museum_id}-${responseItem[formatResponseIndex.fields.id.value[museum_id]]}`
         } else if (key === 'description' || key === 'short_description') {
@@ -220,7 +252,6 @@ export const formatResponseIndex: FormatResponseIndex = {
       results.push(...await getFormattedResponse('VANDA', queries));
       results.push(...await getFormattedResponse('CHIA', queries));
     }
-    console.log(results)
     return results;
   };
   

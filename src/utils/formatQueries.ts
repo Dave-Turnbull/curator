@@ -1,3 +1,5 @@
+import { orderByIndex } from "./fetchData";
+
 export interface Queries {
     search_titles?: string | null;
     search_all?: string | null;
@@ -7,6 +9,7 @@ export interface Queries {
     };
     creator?: string | null;
     page?: number;
+    order_by?: string;
   }
 
   interface ElasticsearchQueryStruct {
@@ -40,6 +43,12 @@ export interface Queries {
             break;
           case 'page':
             formattedQueries.page = value + 1
+            break;
+          case 'order_by':
+            if (orderByIndex[value].VANDA) {
+              formattedQueries.order_by = orderByIndex[value].VANDA
+            }
+            break;
         }
       }
     });
@@ -85,7 +94,13 @@ export interface Queries {
             });
             break;
           case 'page':
-            formattedQueries.from = value
+            formattedQueries.from = value;
+            break;
+          case 'order_by':
+            if (orderByIndex[value].CHIA) {
+              formattedQueries.sort = orderByIndex[value].CHIA
+            }
+            break;
         }
       }
     });
