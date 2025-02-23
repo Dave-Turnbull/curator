@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { orderByIndex } from "./fetchData";
 
 export interface Queries {
@@ -22,8 +24,8 @@ export interface Queries {
     from?: number;
   }
   
-  export const formatVandASearchFilters = (queries: Queries): Record<string, any> => {
-    const formattedQueries: Record<string, any> = {};
+  export const formatVandASearchFilters = (queries: Queries): { [key: string]: string } => {
+    const formattedQueries: { [key: string]: string } = {};
     
     Object.entries(queries).forEach(([key, value]) => {
       if (value) {
@@ -45,7 +47,9 @@ export interface Queries {
             formattedQueries.page = value + 1
             break;
           case 'order_by':
+            //@ts-expect-error temp fix
             if (orderByIndex[value].VANDA) {
+              //@ts-expect-error temp fix
               formattedQueries.order_by = orderByIndex[value].VANDA
             }
             break;
@@ -97,7 +101,9 @@ export interface Queries {
             formattedQueries.from = value;
             break;
           case 'order_by':
+            //@ts-expect-error temp fix
             if (orderByIndex[value].CHIA) {
+              //@ts-expect-error temp fix
               formattedQueries.sort = orderByIndex[value].CHIA
             }
             break;

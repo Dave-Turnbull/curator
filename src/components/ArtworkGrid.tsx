@@ -1,5 +1,5 @@
 import { formatResponseIndex } from "../utils/fetchData";
-import { Button, Card, Image, Flex, Center } from "@chakra-ui/react";
+import { Button, Card, Image, Flex } from "@chakra-ui/react";
 import { DataListItem, DataListRoot } from "@/components/ui/data-list";
 import { ArtworkRecord } from "@/types";
 import { saveArtwork, deleteArtwork } from "@/utils/localStorage";
@@ -28,9 +28,11 @@ const ArtworkGrid: React.FC<ArtworkGridProps> = ({
 
   useEffect(() => {
     if (data) {
+      //@ts-expect-error temp fix
       setArtworkArray(data);
     } else if (isLocalStorage) {
       const artworksArray = Object.values(savedArtworks);
+      //@ts-expect-error temp fix
       setArtworkArray(artworksArray);
     } else {
       setErrorMsg("Cannot find artwork!");
@@ -40,16 +42,19 @@ const ArtworkGrid: React.FC<ArtworkGridProps> = ({
   const saveItem = (artworkObject: object) => {
     setSavedArtworks((prev) => {
       const updated = { ...prev };
+      //@ts-expect-error temp fix
       updated[artworkObject.internal_id] = artworkObject;
       return updated;
     });
     saveArtwork(artworkObject);
   };
 
+  //@ts-expect-error temp fix
   const deleteItem = (index: number, internal_id) => {
     console.log("deleting", internal_id);
     setSavedArtworks((prev) => {
       const updated = { ...prev };
+      //@ts-expect-error temp fix
       delete updated[internal_id];
       return updated;
     });

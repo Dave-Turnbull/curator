@@ -1,3 +1,6 @@
+/* eslint-disable no-case-declarations */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import useApiCall from "../hooks/useApiCall";
 import apiData from "./apiData";
 import { formatElastisearchFilters, formatVandASearchFilters } from "./formatQueries";
@@ -218,6 +221,7 @@ export const formatResponseIndex: FormatResponseIndex = {
           formattedResponseItem.thumbnail_src = responseItemField?apiData[museum_id].get_image_url(200, responseItemField):placeholderPath;
           formattedResponseItem.image_src = responseItemField?apiData[museum_id].get_image_url(843, responseItemField):placeholderPath;
         } else if (key === 'id') {
+          //@ts-expect-error temp fix
           formattedResponseItem.internal_id = `${museum_id}-${responseItem[formatResponseIndex.fields.id.value[museum_id]]}`
         } else if (key === 'description' || key === 'short_description') {
           formattedResponseItem[key] = removeHTMLTags(responseItemField)

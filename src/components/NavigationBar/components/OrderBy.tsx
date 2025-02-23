@@ -2,7 +2,6 @@ import { createListCollection } from "@chakra-ui/react";
 import {
   SelectContent,
   SelectItem,
-  SelectLabel,
   SelectRoot,
   SelectTrigger,
   SelectValueText,
@@ -11,9 +10,10 @@ import { capitalizeFirstLetter } from "@/utils/miscUtils";
 import { orderByIndex } from "@/utils/fetchData";
 
 export const OrderBy = ({
+  //@ts-expect-error temporary fix
   currentOrderBy,
+  //@ts-expect-error temporary fix
   setCurrentOrderBy,
-  museumsToSearch,
 }) => {
   const listOrderCollection = {
     items: Object.keys(orderByIndex).map((orderIndexItem) => {

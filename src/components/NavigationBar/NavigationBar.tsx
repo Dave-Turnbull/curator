@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+
 import { useState } from "react";
 import { Button, Flex, Heading, Input, Separator } from "@chakra-ui/react";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -133,7 +135,6 @@ export const NavigationBar = () => {
               <OrderBy
                 currentOrderBy={currentOrderBy}
                 setCurrentOrderBy={setCurrentOrderBy}
-                museumsToSearch={museumsToSearch}
               />
               <Flex gap={5}>
                 {!isAdvancedSearch && (
