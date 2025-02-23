@@ -8,14 +8,10 @@ export const getFromLocalStorage = (key: string): object[] => {
 };
 
 export const addToLocalStorageByID = (key: string, newArtwork: object) => {
-  console.log('saving', newArtwork)
   const currentData = getFromLocalStorage(key) || {};
-  console.log('datafromstorage', currentData)
   //@ts-expect-error temp fix
   currentData[newArtwork.internal_id] = (newArtwork);
-  console.log('currentData', currentData)
   saveToLocalStorage(key, currentData);
-  
 }
 
 export const deleteFromLocalStorageByID = (key: string, internal_id: string) => {

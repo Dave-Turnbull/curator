@@ -152,7 +152,7 @@ export const formatResponseIndex: FormatResponseIndex = {
 
   export const orderByIndex = {
     relevance: {
-      [apiData.VANDA.internalID]: "",
+      [apiData.VANDA.internalID]: null,
       [apiData.CHIA.internalID]: "_score",
     },
     // title: {
@@ -195,7 +195,6 @@ export const formatResponseIndex: FormatResponseIndex = {
       apiData[museum_id].endpoints.search.endpoint,
       { ...queries, ...apiData[museum_id].endpoints.search.required_queries }
     );
-    console.log(response)
     
     const formattedResponse: ArtworkRecord[] = [];
     const responseArtworkData = response[formatResponseIndex.data_path[museum_id]] || [];
@@ -238,7 +237,6 @@ export const formatResponseIndex: FormatResponseIndex = {
   
   const fetchData = async (queries: Queries, museumsToSearch?: MuseumArray): Promise<ArtworkRecord[]> => {
     const results: ArtworkRecord[] = [];
-    console.log('current queries: ', queries, museumsToSearch)
     if (museumsToSearch) {
       for (const museumToSearch of museumsToSearch) {
         switch (museumToSearch) {

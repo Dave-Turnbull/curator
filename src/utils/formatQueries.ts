@@ -31,10 +31,10 @@ export interface Queries {
       if (value) {
         switch (key) {
           case 'search_titles':
-            formattedQueries.q = value;
+            formattedQueries.q_object_title = value;
             break;
           case 'search_all':
-            formattedQueries.search = value;
+            formattedQueries.q = value;
             break;
           case 'date':
             if (value.from) formattedQueries.year_made_from = value.from;
@@ -56,7 +56,6 @@ export interface Queries {
         }
       }
     });
-    console.log(formattedQueries)
     return formattedQueries;
   };
   

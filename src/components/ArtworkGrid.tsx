@@ -51,7 +51,6 @@ const ArtworkGrid: React.FC<ArtworkGridProps> = ({
 
   //@ts-expect-error temp fix
   const deleteItem = (index: number, internal_id) => {
-    console.log("deleting", internal_id);
     setSavedArtworks((prev) => {
       const updated = { ...prev };
       //@ts-expect-error temp fix
