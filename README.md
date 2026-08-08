@@ -16,3 +16,4 @@ To run, type `npm run dev` in a console window and access the provided web-addre
 ## Please note:
 
 This application makes use of freely provided API's from museums and art galleries. If you require more than one request per minute please download the local version of this application. When running locally, restrict your usage to no more than 60 requests per minute.
+forgejo-side addition
